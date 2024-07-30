@@ -2,7 +2,7 @@
 import {Box, Stack, Typography, Button, Modal, TextField} from '@mui/material'
 import { useEffect, useState } from 'react'
 import { firestore } from '@/firebase'
-import {collection, query, where, getDocs} from 'firebase/firestore'
+import {collection, query, where, getDocs, setDoc, doc} from 'firebase/firestore'
 
 const style = {
   position: 'absolute',
@@ -29,7 +29,7 @@ export default function Home() {
   const handleClose = () => setOpen(false);
 
   const [itemName, setItemName] = useState('')
-  
+
   const updatePantry = async () => {
     const snapshot = query(collection(firestore,'pantry'))
     const docs = await getDocs(snapshot)
@@ -45,8 +45,10 @@ export default function Home() {
     updatePantry()
   },[])
 
-  const addItem = (item) =>{
-    console.log(item)
+  const addItem = async (item) =>{
+    const docRef =  doc(collection(firestore,'pantry'),item)
+    await setDoc(docRef,{})
+    updatePantry()
   }
 
   return (<Box
