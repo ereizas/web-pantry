@@ -1,7 +1,24 @@
-import {Box, Stack, Typography, colors} from '@mui/material'
-const item = ['onion','tomato','lettuce','cucumber','garlic','ginger','carrot']
+'use client'
+import {Box, Stack, Typography} from '@mui/material'
+import { useEffect, useState } from 'react'
+import { firestore } from '@/firebase'
+import {collection, query, where, getDocs} from 'firebase/firestore'
 
 export default function Home() {
+  const [pantry, setPantry] = useState([])
+  useEffect( ()=> {
+    const updatePantry = async () => {
+      const snapshot = query(collection(firestore,'pantry'))
+      const docs = await getDocs(snapshot)
+      const pantryList = []
+      docs.forEach((doc) => {
+        pantryList.push(doc.id)
+      })
+      console.log(pantryList)
+      setPantry(pantryList)
+    }
+    updatePantry()
+  },[])
   return (<Box
     width="100vw" 
     height="100vh"
@@ -23,11 +40,11 @@ export default function Home() {
           </Typography>
         </Box>
         <Stack width="800px"height="300px"spacing={2} overflow={'auto'}>
-        {item.map((i)=>(
+        {pantry.map((i)=>(
           <Box
             key={i}
             width="100%"
-            height="300px"
+            minHeight="150px"
             display={'flex'}
             justifyContent={'center'}
             alignItems={'center'}
