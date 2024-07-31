@@ -82,12 +82,7 @@ export default function Home() {
     alignItems={"center"}
     gap={2}
     >
-      <Modal
-      open={open}
-        onClose={handleClose}
-        aria-labelledby="item-adder"
-        aria-describedby="item-adder-description"
-      >
+      <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
           <Typography id="item-adder" variant="h6" component="h2">
             Add Item
@@ -107,6 +102,12 @@ export default function Home() {
               handleClose()
             }}>
               Add
+            </Button>
+            <Button variant="outlined" 
+            onClick={()=>{
+              handleClose()
+            }}>
+              Cancel
             </Button>
           </Stack>
         </Box>
