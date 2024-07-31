@@ -29,6 +29,7 @@ export default function Home() {
   const handleClose = () => setOpen(false);
 
   const [itemName, setItemName] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const updatePantry = async () => {
     const snapshot = query(collection(firestore,'pantry'))
@@ -93,7 +94,7 @@ export default function Home() {
           </Typography>
           <Stack width ="100%" direction={'row'} spacing={2}>
             <TextField
-            id="outlined-basic"
+            id="add-item-field"
             label="Item"
             variant="outlined"
             fullWidth 
@@ -110,6 +111,17 @@ export default function Home() {
           </Stack>
         </Box>
       </Modal>
+      <Box display={"flex"}>
+        <TextField
+            id="search-field"
+            label="Search"
+            variant="outlined"
+            width="60%"
+            fullWidth 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}/>
+        <Button variant="contained">Search</Button>
+      </Box>
       <Button variant="contained" onClick={handleOpen}>Add</Button>
       <Box border={'1px solid #333'}>
         <Box 
