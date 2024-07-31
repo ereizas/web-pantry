@@ -1,8 +1,11 @@
 'use client'
-import {Box, Stack, Typography, Button, Modal, TextField} from '@mui/material'
+import { Box, Stack, Typography, Button, Modal, TextField, Card, CardContent, CardActions, IconButton } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { firestore } from '@/firebase'
-import {collection, query, getDoc, getDocs, setDoc, doc, deleteDoc} from 'firebase/firestore'
+import { collection, query, getDoc, getDocs, setDoc, doc, deleteDoc } from 'firebase/firestore'
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove'
+import SearchIcon from '@mui/icons-material/Search'
 
 const style = {
   position: 'absolute',
@@ -24,159 +27,145 @@ const style = {
 export default function Home() {
   const [pantry, setPantry] = useState([])
   const [filteredPantry, setFilteredPantry] = useState([])
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
+  const [open, setOpen] = useState(false)
+  const handleOpen = () => setOpen(true)
+  const handleClose = () => setOpen(false)
   const [itemName, setItemName] = useState('')
-  const [filter, setFilter] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const updatePantry = async () => {
-    const snapshot = query(collection(firestore,'pantry'))
+    const snapshot = query(collection(firestore, 'pantry'))
     const docs = await getDocs(snapshot)
     const pantryList = []
     docs.forEach((doc) => {
-      pantryList.push({name:doc.id, ...doc.data()})
+      pantryList.push({ name: doc.id, ...doc.data() })
     })
     setPantry(pantryList)
     setFilteredPantry(pantryList)
   }
 
   useEffect(() => {
-    if (filter === '') {
+    updatePantry()
+  }, [])
+
+  useEffect(() => {
+    if (searchQuery === '') {
       setFilteredPantry(pantry)
     } else {
       const filtered = pantry.filter(item =>
-        item.name.toLowerCase().includes(filter.toLowerCase())
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
       )
       setFilteredPantry(filtered)
     }
-  }, [filter, pantry])
+  }, [searchQuery, pantry])
 
-  useEffect( ()=> {
-    updatePantry()
-  },[])
-
-  const addItem = async (item) =>{
-    const docRef =  doc(collection(firestore,'pantry'),item)
+  const addItem = async (item) => {
+    const docRef = doc(collection(firestore, 'pantry'), item)
     const docSnap = await getDoc(docRef)
-    if(docSnap.exists()){
-      const {count} = docSnap.data()
-      await setDoc(docRef, {count:count+1})
-    }
-    else{
-      await setDoc(docRef,{count:1})
+    if (docSnap.exists()) {
+      const { count } = docSnap.data()
+      await setDoc(docRef, { count: count + 1 })
+    } else {
+      await setDoc(docRef, { count: 1 })
     }
     await updatePantry()
   }
 
-  const removeItem = async (item) =>{
-    const docRef = doc(collection(firestore,'pantry'), item)
+  const removeItem = async (item) => {
+    const docRef = doc(collection(firestore, 'pantry'), item)
     const docSnap = await getDoc(docRef)
-    if(docSnap.exists()){
-      const {count} = docSnap.data()
-      if(count==1){
+    if (docSnap.exists()) {
+      const { count } = docSnap.data()
+      if (count == 1) {
         await deleteDoc(docRef)
-      } else{
-        await setDoc(docRef, {count:count-1})
+      } else {
+        await setDoc(docRef, { count: count - 1 })
       }
     }
     await updatePantry()
   }
 
-  return (<Box
-    width="100vw" 
-    height="100vh"
-    display={"flex"}
-    justifyContent={"center"}
-    flexDirection={'column'}
-    alignItems={"center"}
-    gap={2}
+  return (
+    <Box
+      width="100vw"
+      height="100vh"
+      display={"flex"}
+      justifyContent={"center"}
+      flexDirection={'column'}
+      alignItems={"center"}
+      gap={2}
     >
       <Modal open={open} onClose={handleClose}>
         <Box sx={style}>
           <Typography id="item-adder" variant="h6" component="h2">
             Add Item
           </Typography>
-          <Stack width ="100%" direction={'row'} spacing={2}>
+          <Stack width="100%" direction={'row'} spacing={2}>
             <TextField
-            id="add-item-field"
-            label="Item"
-            variant="outlined"
-            fullWidth 
-            value={itemName}
-            onChange={(e) => setItemName(e.target.value)}/>
-            <Button variant="outlined" 
-            onClick={()=>{
-              addItem(itemName.charAt(0).toUpperCase() + itemName.slice(1))
-              setItemName('')
-              handleClose()
-            }}>
+              id="add-item-field"
+              label="Item"
+              variant="outlined"
+              fullWidth
+              value={itemName}
+              onChange={(e) => setItemName(e.target.value)} />
+            <Button variant="outlined"
+              onClick={() => {
+                addItem(itemName.charAt(0).toUpperCase() + itemName.slice(1))
+                setItemName('')
+                handleClose()
+              }}>
               Add
             </Button>
-            <Button variant="outlined" 
-            onClick={()=>{
-              handleClose()
-            }}>
+            <Button variant="outlined"
+              onClick={() => {
+                setItemName('')
+                handleClose()
+              }}>
               Cancel
             </Button>
           </Stack>
         </Box>
       </Modal>
-      <Box display={"flex"}>
+      <Box display={"flex"} width="60%" alignItems="center" gap={2}>
         <TextField
-            id="filter-field"
-            label="Filter"
-            variant="outlined"
-            width="60%"
-            fullWidth 
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}/>
+          id="search-field"
+          label="Search"
+          variant="outlined"
+          fullWidth
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)} />
+        <IconButton>
+          <SearchIcon />
+        </IconButton>
       </Box>
       <Button variant="contained" onClick={handleOpen}>Add New Item</Button>
-      <Box border={'1px solid #333'}>
-        <Box 
-        width="800px"
-        height="100px"
-        bgcolor={'#ADD8E6'}
-        display={'flex'}
-        justifyContent={'center'}
-        alignItems={'center'}>
-          <Typography variant={'h2'} color={'#333'} textAlign={'center'}>
-            Pantry Items
-          </Typography>
-        </Box>
-        <Stack width="800px"height="300px"spacing={2} overflow={'auto'}>
-        {filteredPantry.map(({name, count})=>(
-          <Box
-            key={name}
-            width="100%"
-            minHeight="150px"
-            display={'flex'}
-            justifyContent={'space-between'}
-            alignItems={'center'}
-            bgcolor={'#F0F0F0'}
-            paddingX={5}
-          >
-            <Typography variant={'h3'} color={'#333'} textAlign={'center'}>
-              {name.charAt(0).toUpperCase() + name.slice(1)}
-            </Typography>
-            <Typography variant={'h3'} color={'#333'} textAlign={'center'}>
-              Quantity: {count}
-            </Typography>
-            <Button variant="contained" 
-            onClick={()=>{
-              addItem(name)
-              setItemName('')
-              handleClose()
-            }}>
-              Add
-            </Button>
-            <Button variant='contained' onClick={() => removeItem(name)}>Remove</Button>
-          </Box>
-        ))}
+      <Box width="80%" mt={2}>
+        <Typography variant={'h4'} color={'#333'} textAlign={'center'} mb={2}>
+          Pantry Items
+        </Typography>
+        <Stack spacing={2}>
+          {filteredPantry.map(({ name, count }) => (
+            <Card key={name} variant="outlined">
+              <CardContent>
+                <Typography variant={'h5'} color={'#333'}>
+                  {name.charAt(0).toUpperCase() + name.slice(1)}
+                </Typography>
+                <Typography variant={'body1'} color={'#555'}>
+                  Quantity: {count}
+                </Typography>
+              </CardContent>
+              <CardActions>
+                <IconButton onClick={() => addItem(name)}>
+                  <AddIcon />
+                </IconButton>
+                <IconButton onClick={() => removeItem(name)}>
+                  <RemoveIcon />
+                </IconButton>
+              </CardActions>
+            </Card>
+          ))}
         </Stack>
       </Box>
-  </Box>
-  );
+    </Box>
+  )
 }
