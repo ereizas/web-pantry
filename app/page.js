@@ -123,7 +123,7 @@ export default function Home() {
             onChange={(e) => setSearchQuery(e.target.value)}/>
         <Button variant="contained">Search</Button>
       </Box>
-      <Button variant="contained" onClick={handleOpen}>Add</Button>
+      <Button variant="contained" onClick={handleOpen}>Add New Item</Button>
       <Box border={'1px solid #333'}>
         <Box 
         width="800px"
@@ -154,6 +154,14 @@ export default function Home() {
             <Typography variant={'h3'} color={'#333'} textAlign={'center'}>
               Quantity: {count}
             </Typography>
+            <Button variant="contained" 
+            onClick={()=>{
+              addItem(name)
+              setItemName('')
+              handleClose()
+            }}>
+              Add
+            </Button>
             <Button variant='contained' onClick={() => removeItem(name)}>Remove</Button>
           </Box>
         ))}
