@@ -5,7 +5,6 @@ import { firestore } from '@/firebase'
 import { collection, query, getDoc, getDocs, setDoc, doc, deleteDoc } from 'firebase/firestore'
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove'
-import SearchIcon from '@mui/icons-material/Search'
 
 const style = {
   position: 'absolute',
@@ -31,7 +30,7 @@ export default function Home() {
   const handleOpen = () => setOpen(true)
   const handleClose = () => setOpen(false)
   const [itemName, setItemName] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [filter, setFilter] = useState('')
 
   const updatePantry = async () => {
     const snapshot = query(collection(firestore, 'pantry'))
@@ -49,15 +48,15 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    if (searchQuery === '') {
+    if (filter === '') {
       setFilteredPantry(pantry)
     } else {
       const filtered = pantry.filter(item =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+        item.name.toLowerCase().includes(filter.toLowerCase())
       )
       setFilteredPantry(filtered)
     }
-  }, [searchQuery, pantry])
+  }, [filter, pantry])
 
   const addItem = async (item) => {
     const docRef = doc(collection(firestore, 'pantry'), item)
@@ -126,23 +125,20 @@ export default function Home() {
           </Stack>
         </Box>
       </Modal>
-      <Box display={"flex"} width="60%" alignItems="center" gap={2}>
+      <Box display={"flex"} flexDirection={"column"} width="60%" justifyContent={"space-between"} alignItems="center" gap={2} mb={2} position="sticky" top={0} bgcolor="white" zIndex={1} p={2} boxShadow={1}>
         <TextField
-          id="search-field"
-          label="Search"
+          id="filter-field"
+          label="Filter"
           variant="outlined"
           fullWidth
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)} />
-        <IconButton>
-          <SearchIcon />
-        </IconButton>
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)} />
+          <Button variant="contained" onClick={handleOpen}>Add New Item</Button>
       </Box>
-      <Button variant="contained" onClick={handleOpen}>Add New Item</Button>
-      <Box width="80%" mt={2}>
-        <Typography variant={'h4'} color={'#333'} textAlign={'center'} mb={2}>
-          Pantry Items
-        </Typography>
+      <Typography variant={'h4'} color={'#333'} textAlign={'center'} mb={2}>
+        Pantry Items
+      </Typography>
+      <Box width="80%" mt={2} maxHeight="60vh" overflow="auto">
         <Stack spacing={2}>
           {filteredPantry.map(({ name, count }) => (
             <Card key={name} variant="outlined">
