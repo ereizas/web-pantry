@@ -23,13 +23,13 @@ const style = {
 
 export default function Home() {
   const [pantry, setPantry] = useState([])
-
+  const [filteredPantry, setFilteredPantry] = useState([])
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   const [itemName, setItemName] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [filter, setFilter] = useState('')
 
   const updatePantry = async () => {
     const snapshot = query(collection(firestore,'pantry'))
@@ -38,9 +38,20 @@ export default function Home() {
     docs.forEach((doc) => {
       pantryList.push({name:doc.id, ...doc.data()})
     })
-    console.log(pantryList)
     setPantry(pantryList)
+    setFilteredPantry(pantryList)
   }
+
+  useEffect(() => {
+    if (filter === '') {
+      setFilteredPantry(pantry)
+    } else {
+      const filtered = pantry.filter(item =>
+        item.name.toLowerCase().includes(filter.toLowerCase())
+      )
+      setFilteredPantry(filtered)
+    }
+  }, [filter, pantry])
 
   useEffect( ()=> {
     updatePantry()
@@ -114,14 +125,13 @@ export default function Home() {
       </Modal>
       <Box display={"flex"}>
         <TextField
-            id="search-field"
-            label="Search"
+            id="filter-field"
+            label="Filter"
             variant="outlined"
             width="60%"
             fullWidth 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}/>
-        <Button variant="contained">Search</Button>
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}/>
       </Box>
       <Button variant="contained" onClick={handleOpen}>Add New Item</Button>
       <Box border={'1px solid #333'}>
@@ -137,7 +147,7 @@ export default function Home() {
           </Typography>
         </Box>
         <Stack width="800px"height="300px"spacing={2} overflow={'auto'}>
-        {pantry.map(({name, count})=>(
+        {filteredPantry.map(({name, count})=>(
           <Box
             key={name}
             width="100%"
