@@ -2,7 +2,7 @@
 import {Box, Stack, Typography, Button, Modal, TextField} from '@mui/material'
 import { useEffect, useState } from 'react'
 import { firestore } from '@/firebase'
-import {collection, query, where, getDocs, setDoc, doc} from 'firebase/firestore'
+import {collection, query, getDoc, getDocs, setDoc, doc, deleteDoc} from 'firebase/firestore'
 
 const style = {
   position: 'absolute',
@@ -47,8 +47,14 @@ export default function Home() {
 
   const addItem = async (item) =>{
     const docRef =  doc(collection(firestore,'pantry'),item)
-    await setDoc(docRef,{})
-    updatePantry()
+    await setDoc(docRef, {})
+    await updatePantry()
+  }
+
+  const removeItem = async (item) =>{
+    const docRef = doc(collection(firestore,'pantry'), item)
+    await deleteDoc(docRef)
+    await updatePantry()
   }
 
   return (<Box
@@ -109,9 +115,10 @@ export default function Home() {
             width="100%"
             minHeight="150px"
             display={'flex'}
-            justifyContent={'center'}
+            justifyContent={'space-between'}
             alignItems={'center'}
             bgcolor={'#F0F0F0'}
+            paddingX={5}
           >
             <Typography
               variant={'h3'}
@@ -120,6 +127,7 @@ export default function Home() {
             >
               {i.charAt(0).toUpperCase() + i.slice(1)}
             </Typography>
+            <Button variant='contained' onClick={() => removeItem(i)}>Remove</Button>
           </Box>
         ))}
         </Stack>
