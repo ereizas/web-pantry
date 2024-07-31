@@ -1,10 +1,8 @@
 'use client'
-import { Box, Stack, Typography, Button, Modal, TextField, Card, CardContent, CardActions, IconButton } from '@mui/material'
-import { useEffect, useState } from 'react'
-import { firestore } from '@/firebase'
-import { collection, query, getDoc, getDocs, setDoc, doc, deleteDoc } from 'firebase/firestore'
-import AddIcon from '@mui/icons-material/Add'
-import RemoveIcon from '@mui/icons-material/Remove'
+import { Box, Stack, Typography, Button, Modal, TextField, Card, CardContent, CardActions, IconButton } from '@mui/material';
+import { useEffect, useState } from 'react';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 
 const modalStyle = {
   position: 'absolute',
@@ -47,65 +45,57 @@ const buttonStyle = {
 };
 
 export default function Home() {
-  const [pantry, setPantry] = useState([])
-  const [filteredPantry, setFilteredPantry] = useState([])
-  const [open, setOpen] = useState(false)
-  const handleOpen = () => setOpen(true)
-  const handleClose = () => setOpen(false)
-  const [itemName, setItemName] = useState('')
-  const [filter, setFilter] = useState('')
+  const [pantry, setPantry] = useState([]);
+  const [filteredPantry, setFilteredPantry] = useState([]);
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const [itemName, setItemName] = useState('');
+  const [filter, setFilter] = useState('');
 
-  const updatePantry = async () => {
-    const snapshot = query(collection(firestore, 'pantry'))
-    const docs = await getDocs(snapshot)
-    const pantryList = []
-    docs.forEach((doc) => {
-      pantryList.push({ name: doc.id, ...doc.data() })
-    })
-    setPantry(pantryList)
-    setFilteredPantry(pantryList)
-  }
+  const fetchPantry = async () => {
+    const response = await fetch('/api/pantry');
+    const data = await response.json();
+    setPantry(data);
+    setFilteredPantry(data);
+  };
 
   useEffect(() => {
-    updatePantry()
-  }, [])
+    fetchPantry();
+  }, []);
 
   useEffect(() => {
     if (filter === '') {
-      setFilteredPantry(pantry)
+      setFilteredPantry(pantry);
     } else {
       const filtered = pantry.filter(item =>
         item.name.toLowerCase().includes(filter.toLowerCase())
-      )
-      setFilteredPantry(filtered)
+      );
+      setFilteredPantry(filtered);
     }
-  }, [filter, pantry])
+  }, [filter, pantry]);
 
   const addItem = async (item) => {
-    const docRef = doc(collection(firestore, 'pantry'), item)
-    const docSnap = await getDoc(docRef)
-    if (docSnap.exists()) {
-      const { count } = docSnap.data()
-      await setDoc(docRef, { count: count + 1 })
-    } else {
-      await setDoc(docRef, { count: 1 })
-    }
-    await updatePantry()
-  }
+    await fetch('/api/pantry', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ item })
+    });
+    fetchPantry();
+  };
 
   const removeItem = async (item) => {
-    const docRef = doc(collection(firestore, 'pantry'), item)
-    const docSnap = await getDoc(docRef)
-    if (docSnap.exists()) {
-      const { count } = docSnap.data()
-      if (count == 1) {
-        await deleteDoc(docRef)
-      } else {
-        await setDoc(docRef, { count: count - 1 })
-      }
-    }
-    await updatePantry()
-  }
+    await fetch('/api/pantry', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ item })
+    });
+    fetchPantry();
+  };
 
   return (
     <Box
@@ -134,16 +124,16 @@ export default function Home() {
             <Button variant="contained"
               sx={buttonStyle}
               onClick={() => {
-                addItem(itemName.charAt(0).toUpperCase() + itemName.slice(1))
-                setItemName('')
-                handleClose()
+                addItem(itemName.charAt(0).toUpperCase() + itemName.slice(1));
+                setItemName('');
+                handleClose();
               }}>
               Add
             </Button>
             <Button variant="outlined"
               onClick={() => {
-                setItemName('')
-                handleClose()
+                setItemName('');
+                handleClose();
               }}>
               Cancel
             </Button>
@@ -188,5 +178,5 @@ export default function Home() {
         </Stack>
       </Box>
     </Box>
-  )
+  );
 }
