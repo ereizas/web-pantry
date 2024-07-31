@@ -3,24 +3,47 @@ import { Box, Stack, Typography, Button, Modal, TextField, Card, CardContent, Ca
 import { useEffect, useState } from 'react'
 import { firestore } from '@/firebase'
 import { collection, query, getDoc, getDocs, setDoc, doc, deleteDoc } from 'firebase/firestore'
-import AddIcon from '@mui/icons-material/Add';
+import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 
-const style = {
+const modalStyle = {
   position: 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
   width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
+  bgcolor: '#fff',
+  border: '1px solid #ddd',
+  borderRadius: '8px',
+  boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)',
   pt: 2,
   px: 4,
   pb: 3,
-  gap: 3,
   display: 'flex',
-  flexDirection: 'column'
+  flexDirection: 'column',
+  gap: 2
+};
+
+const headerStyle = {
+  backgroundColor: '#C8E6C9',
+  boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+  borderBottom: '1px solid #ddd',
+  padding: '16px',
+  borderRadius: '8px'
+};
+
+const cardStyle = {
+  borderRadius: '8px',
+  boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+  backgroundColor: '#FFF9C4'
+};
+
+const buttonStyle = {
+  backgroundColor: '#4CAF50',
+  color: '#fff',
+  '&:hover': {
+    backgroundColor: '#0056b3'
+  }
 };
 
 export default function Home() {
@@ -93,9 +116,10 @@ export default function Home() {
       flexDirection={'column'}
       alignItems={"center"}
       gap={2}
+      bgcolor="#E8F5E9"
     >
       <Modal open={open} onClose={handleClose}>
-        <Box sx={style}>
+        <Box sx={modalStyle}>
           <Typography id="item-adder" variant="h6" component="h2">
             Add Item
           </Typography>
@@ -107,7 +131,8 @@ export default function Home() {
               fullWidth
               value={itemName}
               onChange={(e) => setItemName(e.target.value)} />
-            <Button variant="outlined"
+            <Button variant="contained"
+              sx={buttonStyle}
               onClick={() => {
                 addItem(itemName.charAt(0).toUpperCase() + itemName.slice(1))
                 setItemName('')
@@ -125,7 +150,7 @@ export default function Home() {
           </Stack>
         </Box>
       </Modal>
-      <Box display={"flex"} flexDirection={"column"} width="60%" justifyContent={"space-between"} alignItems="center" gap={2} mb={2} position="sticky" top={0} bgcolor="white" zIndex={1} p={2} boxShadow={1}>
+      <Box display={"flex"} flexDirection={"column"} width="60%" justifyContent={"space-between"} alignItems="center" gap={2} mb={2} position="sticky" top={0} sx={headerStyle}>
         <TextField
           id="filter-field"
           label="Filter"
@@ -133,7 +158,7 @@ export default function Home() {
           fullWidth
           value={filter}
           onChange={(e) => setFilter(e.target.value)} />
-          <Button variant="contained" onClick={handleOpen}>Add New Item</Button>
+        <Button variant="contained" sx={buttonStyle} onClick={handleOpen}>Add New Item</Button>
       </Box>
       <Typography variant={'h4'} color={'#333'} textAlign={'center'} mb={2}>
         Pantry Items
@@ -141,7 +166,7 @@ export default function Home() {
       <Box width="80%" mt={2} maxHeight="60vh" overflow="auto">
         <Stack spacing={2}>
           {filteredPantry.map(({ name, count }) => (
-            <Card key={name} variant="outlined">
+            <Card key={name} sx={cardStyle} variant="outlined">
               <CardContent>
                 <Typography variant={'h5'} color={'#333'}>
                   {name.charAt(0).toUpperCase() + name.slice(1)}
@@ -152,10 +177,10 @@ export default function Home() {
               </CardContent>
               <CardActions>
                 <IconButton onClick={() => addItem(name)}>
-                  <AddIcon />
+                  <AddIcon color="primary" />
                 </IconButton>
                 <IconButton onClick={() => removeItem(name)}>
-                  <RemoveIcon />
+                  <RemoveIcon color="error" />
                 </IconButton>
               </CardActions>
             </Card>
